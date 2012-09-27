@@ -12,7 +12,7 @@ kettu.FilterTorrentsHelpers = {
       });      
     } else {
       return _.select(torrents, function(torrent) {
-        return torrent.status == stati[filter_mode];
+        return torrent.status() === stati[filter_mode];
       });
     }
   }

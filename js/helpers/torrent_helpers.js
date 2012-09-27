@@ -55,7 +55,7 @@
       callback = callback || this.renderTorrent;
 
       this.remoteQuery(request, function(response) {
-        callback.call(context, response['torrents'].map( function(row) { return kettu.Torrent(row); } )[0]);
+        callback.call(context, new kettu.Torrent(response['torrents'][0]));
       });
     },
 
@@ -102,22 +102,25 @@
     },
 
     getNewestTorrents: function(context, response) {
-      var torrents = _.map(response['torrents'], function(row) { return kettu.Torrent(row); }),
+      var torrents = _.map(response['torrents'], function(row) {
+            return new kettu.Torrent(row);
+          }),
           now = parseInt(new Date().getTime().toString().substr(0, 10), 10);
 
       return _.select(torrents, function(torrent) {
-        return parseInt(torrent.addedDate, 10) - now > -2;
+        return parseInt(torrent.get('addedDate'), 10) - now > -2;
       });
     },
 
     globalUpAndDownload: function(torrents) {
       var uploadRate = 0.0, downloadRate = 0.0;
+
       _.each(torrents, function(torrent) {
-        uploadRate += torrent.rateUpload;
-        downloadRate += torrent.rateDownload;
+        uploadRate += torrent.get('rateUpload');
+        downloadRate += torrent.get('rateDownload');
       });
 
-      return kettu.Torrent({}).downAndUploadRateString(downloadRate, uploadRate);
+      return new kettu.Torrent({}).downAndUploadRateString(downloadRate, uploadRate);
     },
 
     makeNewTorrent: function(torrent, view) {

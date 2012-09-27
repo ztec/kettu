@@ -23,13 +23,16 @@ kettu.TorrentDetails = function(transmission) {
   transmission.get('#/torrent_details/:id', function(context) {
     var id = parseInt(context.params['id'], 10);
 
-    kettu.app.trigger('get-torrent-details', {id: id, callback: 'renderTorrentDetailsInView'});
+    kettu.app.trigger('get-torrent-details', {
+      id: id, callback: 'renderTorrentDetailsInView'
+    });
     
     if(kettu.app.info_interval_id) { clearInterval(kettu.app.info_interval_id); }
-    kettu.app.info_interval_id = setInterval(
-      "kettu.app.trigger('get-torrent-details', {id: " + id + ", callback: 'updateTorrentDetailsInView'})",
-      kettu.app.reloadInterval
-    );
+    kettu.app.info_interval_id = setInterval(function() {
+      kettu.app.trigger('get-torrent-details', {
+        id: id, callback: 'updateTorrentDetailsInView'
+      });
+    }, kettu.app.reloadInterval);
   });
   
   transmission.bind('get-torrent-details', function(e, params) {
@@ -38,7 +41,7 @@ kettu.TorrentDetails = function(transmission) {
         request = context.buildRequest('torrent-get', {ids: params.id, fields: fields});
 
     context.remoteQuery(request, function(response) {
-      var torrent = _.map(response['torrents'], function(row) {return kettu.Torrent(row);})[0];
+      var torrent = new kettu.Torrent(response['torrents'][0]);
       kettu.app.trigger('refresh-torrent-details', {torrent: torrent, callback: params.callback});
     });    
   });

@@ -57,18 +57,18 @@ kettu.TorrentDetailsHelpers = {
       var fields = kettu.Torrent.fields.concat(kettu.Torrent.infoFields),
         request = context.buildRequest('torrent-get', {ids: torrents.shift(), fields: fields});
       context.remoteQuery(request, function(response) {
-        var torrent = response['torrents'].map( function(row) {return kettu.Torrent(row);} )[0];
+        var torrent = new kettu.Torrent(response['torrents'][0]);
         accumulation.number_of_torrents += 1;
-        accumulation.size += torrent.sizeWhenDone;
+        accumulation.size += torrent.get('sizeWhenDone');
         accumulation.status_words.push(torrent.statusStringLocalized());
-        accumulation.secure.push(torrent.secure());
-        accumulation.downloaded += (torrent.sizeWhenDone - torrent.leftUntilDone);
-        accumulation.uploaded += torrent.uploadedEver;
-        accumulation.left_until_done += torrent.leftUntilDone;
-        accumulation.rate_download += torrent.rateDownload;
-        accumulation.rate_upload += torrent.rateUpload;
-        accumulation.peers_upload += torrent.peersGettingFromUs;
-        accumulation.peers_download += torrent.peersSendingToUs;
+        accumulation.secure.push(torrent.isSecure());
+        accumulation.downloaded += (torrent.get('sizeWhenDone') - torrent.get('leftUntilDone'));
+        accumulation.uploaded += torrent.get('uploadedEver');
+        accumulation.left_until_done += torrent.get('leftUntilDone');
+        accumulation.rate_download += torrent.get('rateDownload');
+        accumulation.rate_upload += torrent.get('rateUpload');
+        accumulation.peers_upload += torrent.get('peersGettingFromUs');
+        accumulation.peers_download += torrent.get('peersSendingToUs');
         context.accumulateTorrentsAndRenderResult(torrents, accumulation);
       });
     }

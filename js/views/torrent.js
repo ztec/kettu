@@ -1,12 +1,9 @@
 /*global kettu, _*/
 
-kettu.TorrentView = function(torrent, context, sort_peers) {
-  var view = torrent;
-  view.sort_peers = sort_peers || 'client';
-  
-  view.formatTime = function(timestamp) {
+(function() {
+  var formatTime = function(timestamp) {
     if(timestamp === 0) { return 'N/A'; }
-    
+
     var current = new Date(parseInt(timestamp, 10) * 1000);
     if(current) {
       var date = (current.getMonth() + 1) + '/' + current.getDate() + '/' + current.getFullYear();
@@ -16,42 +13,48 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
       return timestamp;
     }      
   };
-  
-  view.addFormattedTimes = function() {
-    if(view.trackerStats !== undefined) {
-      _.each(view.trackerStats, function(stat, i) {
-        view.trackerStats[i]['lastAnnounceTimeFormatted'] = view.formatTime(stat.lastAnnounceTime);
-        view.trackerStats[i]['nextAnnounceTimeFormatted'] = context.formatNextAnnounceTime(stat.nextAnnounceTime);
-        view.trackerStats[i]['lastScrapeTimeFormatted'] = view.formatTime(stat.lastScrapeTime);
-        view.trackerStats[i]['lastScrapeDidNotSucceed'] = !view.lastScrapeSucceeded;
-        view.trackerStats[i]['lastAnnounceDidNotSucceed'] = !view.lastAnnounceSucceeded;
-      });      
-    }    
-  };
-  
-  view.addFormattedSizes = function() {
-    if(view.files !== undefined) {
-      _.each(view.files, function(file) {
-        file.lengthFormatted = Math.formatBytes(file['length']);
-        file.percentDone = Math.formatPercent(file['length'], file['length'] - file.bytesCompleted);
+
+  var addFormattedTimes = function(view, context) {
+    if(view.trackerStats) {
+      view.trackerStats = _.map(view.trackerStats, function(stat) {
+        stat.lastAnnounceTimeFormatted = formatTime(stat.lastAnnounceTime);
+        stat.nextAnnounceTimeFormatted = context.formatNextAnnounceTime(stat.nextAnnounceTime);
+        stat.lastScrapeTimeFormatted = formatTime(stat.lastScrapeTime);
+        stat.lastScrapeDidNotSucceed = !view.lastScrapeSucceeded;
+        stat.lastAnnounceDidNotSucceed = !view.lastAnnounceSucceeded;
+        
+        return stat;
       });
     }
-    if(view.peers !== undefined) {
-      _.each(view.peers, function(peer) {
+  };
+
+  var addFormattedSizes = function(view) {
+    if(view.files) {
+      view.files = _.map(view.files, function(file) {
+        file.lengthFormatted = Math.formatBytes(file['length']);
+        file.percentDone = Math.formatPercent(file['length'], file['length'] - file.bytesCompleted);
+        return file;
+      });
+    }
+    
+    if(view.peers) {
+      view.peers = _.map(view.peers, function(peer) {
         peer.uploadFormatted = peer['rateToPeer'] !== 0 ? Math.formatBytes(peer['rateToPeer']) : '';
         peer.downloadFormatted = peer['rateToClient'] !== 0? Math.formatBytes(peer['rateToClient']) : '';
         peer.percentDone = Math.formatPercent(100, 100 - (peer['progress'] * 100));
-      });      
+        return peer;
+      });
     }
+
     view.rateDownloadFormatted = Math.formatBytes(view.rateDownload) + '/s';
     view.rateUploadFormatted = Math.formatBytes(view.rateUpload) + '/s';
   };
-  
-  view.sortPeers = function() {
-    if(view.peers !== undefined) {
+
+  var sortPeers = function(view) {
+    if(view.peers) {
       var peers = view.peers;
       var peer_sort_function = function() {};
-    
+
       switch(view.sort_peers) {
         case 'client':
           peer_sort_function = function(a, b) {
@@ -80,16 +83,17 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
       view.peers = peers.sort(peer_sort_function);
     }
   };
-  
-  view.addIdsToFiles = function() {
+
+  var addIdsToFiles = function(view) {
     if(view.files) {
-      _.each(view.files, function(file) {
-        var id = view.files.indexOf(file),
-            disabled = view.files[id]['length'] - view.files[id]['bytesCompleted'] === 0;
+      view.files = _.map(view.files, function(file, idx) {
+        var disabled = (file.length - file.bytesCompleted) === 0;
+
+        file.id = 'file_' + idx;
+        file.wanted = (view.fileStats[idx].wanted || disabled) ? ' checked="checked"' : '';
+        file.disabled = disabled ? ' disabled="disabled"' : '';
         
-        file['id'] = 'file_' + id;
-        file['wanted'] = (view.fileStats[id].wanted || disabled) ? ' checked="checked"' : '';
-        file['disabled'] = disabled ? ' disabled="disabled"' : '';
+        return file;
       });
 
       if(view.files.length == 1) {
@@ -100,15 +104,16 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
   };
 
   var joinFileName = function(name) {
-      name = name.join('/');
-      if(name.length > 27) {
-          return name.substr(0, 23) + '&hellip;' + name.substr(-3, 3);
-      } else {
-          return name;
-      }
+    name = name.join('/');
+
+    if(name.length > 27) {
+      return name.substr(0, 23) + '…' + name.substr(-3, 3);
+    } else {
+      return name;
+    }
   };
-  
-  view.folderizeFiles = function() {
+
+  var folderizeFiles = function(view) {
     view.folderless_files = [];
     view.folders = [];
 
@@ -120,7 +125,7 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
         if(name.length > 1) {
           name.shift(); 
         }
-        
+
         if(name.length === 1) {
           file['name'] = joinFileName(name);
           view.folderless_files.push(file);
@@ -144,23 +149,23 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
       });
     }
   };
-  
-  view.formatFolders = function() {
+
+  var formatFolders = function(view) {
     _.each(view.folders, function(folder) {
       var wantedFiles = 0, completeFiles = 0, highPriorityFiles = 0, lowPriorityFiles = 0;
-      
+
       _.each(folder.files, function(file) {
         if(!_.isEmpty(file.wanted)) { wantedFiles += 1; }
         if(!_.isEmpty(file.disabled)) { completeFiles += 1; }
         if(file.priorityArrow == "up") { highPriorityFiles += 1; }
         if(file.priorityArrow == "down") { lowPriorityFiles += 1; }
       });
-      
+
       folder.percentDone = Math.formatPercent(folder.lengthFormatted, folder.lengthFormatted - folder.bytesCompleted);
       folder.lengthFormatted = Math.formatBytes(folder.lengthFormatted);
       folder.wanted = wantedFiles > 0 ? ' checked="checked"' : '';
       folder.disabled = completeFiles === folder.files.length ? ' disabled="disabled"' : '';
-      
+
       if(highPriorityFiles === folder.files.length) {
         folder.priorityArrow = "up";
       } else if(lowPriorityFiles === folder.files.length) {
@@ -170,22 +175,22 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
       }
     });
   };
-  
-  view.addPriorityStringToFiles = function() {
+
+  var addPriorityStringToFiles = function(view, torrent) {
     _.each(view.fileStats, function(stat) {
       var id = view.fileStats.indexOf(stat),
           arrows = {'0': 'normal', '1': 'up', '-1': 'down'};
 
       view.files[id]['priorityArrow'] = arrows[stat.priority.toString()];
-      
+
       if(view.files[id]['length'] - view.files[id]['bytesCompleted'] === 0) {
         view.files[id]['priorityArrow'] = 'done';
       }
     });
-    view.show_select_all = view.files.length > 1 && !view.isDoneDownloading();
+    view.show_select_all = view.files.length > 1 && !torrent.isDoneDownloading();
   };
-  
-  view.sanitizeNumbers = function() {
+
+  var sanitizeNumbers = function(view, context) {
     view.uploadRatio = context.sanitizeNumber(view.uploadRatio);
     if(view.trackerStats !== undefined) {
       var i = 0;
@@ -198,12 +203,16 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
       view.trackerStats = view.trackerStats.slice(0, 2);
     }
   };
-  
-  view.loadLocations = function() {
+
+  var loadLocations = function(view) {
       view.showLocations = false;
 
       if (_.isArray(kettu.config.locations) && kettu.config.locations.length > 0) {
-        view.locations = [{name:"Default", path: kettu.app.settings['download-dir']}];
+        if(kettu.app.settings) {
+          view.locations = [{name:"Default", path: kettu.app.settings['download-dir']}];          
+        } else {
+          view.locations = [];
+        }
 
         _.each(kettu.config.locations, function(location) {
           if (location.path != view.locations[0].path) {
@@ -214,23 +223,28 @@ kettu.TorrentView = function(torrent, context, sort_peers) {
         view.showLocations = true;
       }      
   };
-  
-  view.addFormattedTimes();
-  view.addFormattedSizes();
-  view.sortPeers();
-  view.addPriorityStringToFiles();
-  view.sanitizeNumbers();
-  view.addIdsToFiles();
-  view.folderizeFiles();
-  view.formatFolders();
-  view.loadLocations();
-  
-  view.isMobile = kettu.app.mobile;
-  
-  if(kettu.app.mobile) {
-    view.name = context.shorten(view.name, 27);
-    view.comment = context.shorten(view.comment, 33);
-  }
 
-  return view;
-};
+  kettu.TorrentView = function(torrent, context, sort_peers) {
+    var view = torrent.toJSON();
+    view.sort_peers = sort_peers || 'client';
+
+    addFormattedTimes(view, context);
+    addFormattedSizes(view);
+    sortPeers(view);
+    addPriorityStringToFiles(view, torrent);
+    sanitizeNumbers(view, context);
+    addIdsToFiles(view);
+    folderizeFiles(view);
+    formatFolders(view);
+    loadLocations(view);
+
+    view.isMobile = kettu.app.mobile;
+
+    if(kettu.app.mobile) {
+      view.name = context.shorten(view.name, 27);
+      view.comment = context.shorten(view.comment, 33);
+    }
+
+    return view;
+  };  
+})();

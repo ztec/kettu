@@ -11,8 +11,8 @@ kettu.SortTorrentsHelpers = {
     switch(sort_mode) {
       case 'name':
         torrentSortFunction = function(a, b) {
-          var a_name = a.name.toUpperCase();
-          var b_name = b.name.toUpperCase();
+          var a_name = a.get('name').toUpperCase();
+          var b_name = b.get('name').toUpperCase();
           return (a_name < b_name) ? -1 : (a_name > b_name) ? 1 : 0;
         };
         break;
@@ -23,7 +23,7 @@ kettu.SortTorrentsHelpers = {
         break;
       case 'age':
         torrentSortFunction = function(a, b) {
-          return b.addedDate - a.addedDate;
+          return b.get('addedDate') - a.get('addedDate');
         };
         break;
       case 'progress':
@@ -31,8 +31,8 @@ kettu.SortTorrentsHelpers = {
           if(a.percentDone() != b.percentDone()) {
             return a.percentDone() - b.percentDone();
           } else {
-           var a_ratio = Math.ratio(a.uploadedEver, a.downloadedEver);
-           var b_ratio = Math.ratio(b.uploadedEver, b.downloadedEver);
+           var a_ratio = Math.ratio(a.get('uploadedEver'), a.get('downloadedEver'));
+           var b_ratio = Math.ratio(b.get('uploadedEver'), b.get('downloadedEver'));
            return a_ratio - b_ratio;            
           }
         };
@@ -44,7 +44,7 @@ kettu.SortTorrentsHelpers = {
         break;
       case 'state':
         torrentSortFunction = function(a, b) {
-          return a.status - b.status;
+          return a.status() - b.status();
         };
         break;
     }

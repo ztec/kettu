@@ -14,7 +14,7 @@ describe('torrents', function() {
       done();
     });
   });
-  
+
   it('lets me click on a torrent', function(done) {
     kettu.helpers.createTorrent('Mutant Ninja Turtles');
     

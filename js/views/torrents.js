@@ -1,10 +1,10 @@
 /*global kettu*/
 
 kettu.TorrentsView = function(torrent, context) {
-  var view = torrent;
+  var view = torrent.toJSON();
   
   view.pauseAndActivateButton = function() {
-    var torrent = kettu.Torrent(view);
+    var torrent = new kettu.Torrent(view);
     var options = torrent.isActive() ? ['torrent-stop', 'Pause'] : ['torrent-start', 'Resume'];
     this.cachePartial('templates/torrents/pause_and_activate_button.mustache', 'pause_and_activate_button', context);
     return context.mustache(context.cache('pause_and_activate_button'), {
@@ -13,7 +13,7 @@ kettu.TorrentsView = function(torrent, context) {
       'button': options[1],
       'css_class': torrent.statusWord(),
       'isMobile': !!kettu.app.mobile
-    });    
+    });
   };
 
   view.firstTracker = function() {
@@ -25,29 +25,26 @@ kettu.TorrentsView = function(torrent, context) {
   };
   
   view.errorClass = function() {
-    return view.hasError() ? ' error' : '';
+    return torrent.hasError() ? ' error' : '';
   };
   
   view.isMobile = function() {
     return !!kettu.app.mobile;
   };
   
-  view.paused = function() {
-    return view.statusWord() === 'paused';
-  };
-
   view.mobileError = function() {
-    return (view.isMobile() && view.hasError()) ? 'mobile-error' : '';
+    return (view.isMobile() && torrent.hasError()) ? 'mobile-error' : '';
   };
   
   view.showPriorityArrow = function() {
-    return torrent.bandwidthPriority !== 0;
+    return torrent.get('bandwidthPriority') !== 0;
   };
   
   view.priorityArrow = function() {
-    return torrent.bandwidthPriority == 1 ? 'up' : 'down';
+    return torrent.get('bandwidthPriority') == 1 ? 'up' : 'down';
   };
-  
+
+  view.progressBar = torrent.progressBar();
   view.cachePartial = context.cachePartial;
   
   if(kettu.app.mobile) {
