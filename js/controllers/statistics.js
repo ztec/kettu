@@ -1,6 +1,6 @@
 /*global kettu*/
 
-kettu.Statistics = function(transmission) {
+kettu.StatisticsController = function(transmission) {
   transmission.get('#/statistics', function(context) {
     var request = {
       method: 'session-stats',

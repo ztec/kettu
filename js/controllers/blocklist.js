@@ -1,6 +1,6 @@
 /*global kettu*/
 
-kettu.Blocklist = function(transmission) {
+kettu.BlocklistController = function(transmission) {
   transmission.put('#/blocklist', function(context) {
     var request = { method: 'blocklist-update', arguments: {} };
     

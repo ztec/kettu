@@ -24,11 +24,11 @@ kettu.app = $.sammy(function() {
   this.helpers(kettu.TorrentDetailsHelpers);
   this.helpers(kettu.ViewHelpers);
   
-  kettu.TorrentDetails(this);
-  kettu.Torrents(this);
-  kettu.Settings(this);
-  kettu.Statistics(this);
-  kettu.Blocklist(this);
+  kettu.TorrentDetailsController(this);
+  kettu.TorrentsController(this);
+  kettu.SettingsController(this);
+  kettu.StatisticsController(this);
+  kettu.BlocklistController(this);
   
   this.bind('flash', function(e, message) {
     $('#flash').html(message).show().delay(3000).fadeOut('slow');

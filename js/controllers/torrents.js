@@ -1,6 +1,6 @@
 /*global kettu, _*/
 
-kettu.Torrents = function(transmission) {
+kettu.TorrentsController = function(transmission) {
   transmission.get('#/torrents', function(context) {
     context.setAndSaveModes(context);
     
@@ -97,24 +97,22 @@ kettu.Torrents = function(transmission) {
   });
   
   transmission.bind('get-torrents', function(e, params) {
-    var request = { method: 'torrent-get', arguments: { fields: kettu.Torrent.fields } };
-    this.remoteQuery(request, _.bind(function(response) {
-      var newTorrents = response['torrents'].map(function(row) {
-        return new kettu.Torrent(row);
-      });
-      this.trigger('refreshed-torrents', {
-        torrents: newTorrents,
-        oldTorrents: this.oldTorrents,
-        rerender: params && params.rerender
-      });
-      this.oldTorrents = newTorrents;
-    }, this));
+    var torrents = new kettu.Torrents();
+    torrents.fetch({
+      success: _.bind(function() {
+        this.trigger('refreshed-torrents', {
+          torrents: torrents,
+          rerender: params && params.rerender
+        });
+      }, this)
+    });
   });
   
   transmission.bind('refreshed-torrents', function(e, params) {
-    var sorted_torrents = this.sortTorrents(kettu.app.sort_mode, params['torrents'], kettu.app.reverse_sort);
-    var filtered_torrents = this.filterTorrents(kettu.app.filter_mode, sorted_torrents);
-    this.updateViewElements(filtered_torrents, params['rerender'], kettu.app.settings || {});
+    console.log(params)
+    // var sorted_torrents = this.sortTorrents(kettu.app.sort_mode, params['torrents'], kettu.app.reverse_sort);
+    // var filtered_torrents = this.filterTorrents(kettu.app.filter_mode, sorted_torrents);
+    // this.updateViewElements(filtered_torrents, params['rerender'], kettu.app.settings || {});
   });
   
   transmission.bind('refreshed-torrent', function(e, torrent) {

@@ -7,10 +7,36 @@
     }).join('');
   };
 
+  var fields = [
+    'id', 'name', 'status', 'totalSize', 'sizeWhenDone', 'haveValid', 
+    'leftUntilDone', 'haveUnchecked', 'eta', 'uploadedEver', 'uploadRatio', 
+    'rateDownload', 'rateUpload', 'metadataPercentComplete', 'addedDate', 
+    'trackerStats', 'error', 'errorString', 'recheckProgress', 
+    'bandwidthPriority', 'seedRatioMode', 'seedRatioLimit'
+  ];
+
+  var infoFields = [
+    'downloadDir', 'creator', 'hashString', 'comment', 'isPrivate', 
+    'downloadedEver', 'errorString', 'peersGettingFromUs', 
+    'peersSendingToUs', 'files', 'pieceCount', 'pieceSize', 'peers', 
+    'fileStats', 'peer-limit', 'downloadLimited', 'uploadLimit', 
+    'uploadLimited', 'downloadLimit', 'corruptEver'
+  ];
+  
+  var allFields = _.union(fields, infoFields);
+
   kettu.Torrent = Backbone.Model.extend({
     initialize: function() {
       this.convertByteFields();
       this.initializeStatusFunctions();
+    },
+    
+    fetchParams: {
+      method: 'torrent-get',
+      arguments: {
+        fields: allFields,
+        ids: this.id
+      }
     },
     
     toJSON: function() {
@@ -217,20 +243,8 @@
       'seeding': 6
     },
     
-    fields: [
-      'id', 'name', 'status', 'totalSize', 'sizeWhenDone', 'haveValid', 
-      'leftUntilDone', 'haveUnchecked', 'eta', 'uploadedEver', 'uploadRatio', 
-      'rateDownload', 'rateUpload', 'metadataPercentComplete', 'addedDate', 
-      'trackerStats', 'error', 'errorString', 'recheckProgress', 
-      'bandwidthPriority', 'seedRatioMode', 'seedRatioLimit'
-    ],
-
-    infoFields: [
-      'downloadDir', 'creator', 'hashString', 'comment', 'isPrivate', 
-      'downloadedEver', 'errorString', 'peersGettingFromUs', 
-      'peersSendingToUs', 'files', 'pieceCount', 'pieceSize', 'peers', 
-      'fileStats', 'peer-limit', 'downloadLimited', 'uploadLimit', 
-      'uploadLimited', 'downloadLimit', 'corruptEver'
-    ]
+    fields: fields,
+    infoFields: infoFields,
+    allFields: allFields
   });
 })();

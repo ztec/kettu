@@ -1,6 +1,6 @@
 /*global kettu*/
 
-kettu.Settings = function(transmission) {
+kettu.SettingsController = function(transmission) {
   transmission.get('#/settings', function(context) {
     kettu.app.originalSettings = kettu.app.settings || {};
 
