@@ -14,12 +14,10 @@ kettu.app = $.sammy(function() {
   this.helpers(kettu.LocationHelpers);
   this.helpers(kettu.ContextMenuHelpers);
   this.helpers(kettu.DraggingHelpers);
-  this.helpers(kettu.FilterTorrentsHelpers);
   this.helpers(kettu.InfoHelpers);
   this.helpers(kettu.LinkHelpers);
   this.helpers(kettu.SearchHelpers);
   this.helpers(kettu.SettingHelpers);
-  this.helpers(kettu.SortTorrentsHelpers);
   this.helpers(kettu.TorrentHelpers);
   this.helpers(kettu.TorrentDetailsHelpers);
   this.helpers(kettu.ViewHelpers);

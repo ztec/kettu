@@ -109,10 +109,9 @@ kettu.TorrentsController = function(transmission) {
   });
   
   transmission.bind('refreshed-torrents', function(e, params) {
-    console.log(params)
-    // var sorted_torrents = this.sortTorrents(kettu.app.sort_mode, params['torrents'], kettu.app.reverse_sort);
-    // var filtered_torrents = this.filterTorrents(kettu.app.filter_mode, sorted_torrents);
-    // this.updateViewElements(filtered_torrents, params['rerender'], kettu.app.settings || {});
+    params.torrents.filterByMode(kettu.app.filterMode);
+    params.torrents.sortByMode(kettu.app.sortMode, kettu.app.reverse_sort);
+    this.updateViewElements(params.torrents, params.rerender, kettu.app.settings || {});
   });
   
   transmission.bind('refreshed-torrent', function(e, torrent) {

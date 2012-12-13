@@ -2,15 +2,14 @@
 
 (function() {
   var updateSortDropdown = function() {
-    var sort_mode = kettu.app.sort_mode.charAt(0).toUpperCase() + kettu.app.sort_mode.slice(1);
-    $('#sort_link').text('Sort by ' + (sort_mode || '…'));    
+    var sortMode = kettu.app.sortMode.charAt(0).toUpperCase() + kettu.app.sortMode.slice(1);
+    $('#sort_link').text('Sort by ' + (sortMode || '…'));    
   };
 
   var updateFilterList = function() {
     $('#filters a').removeClass('active');
-    $('#filters .' + kettu.app.filter_mode).addClass('active');
+    $('#filters .' + kettu.app.filterMode).addClass('active');
   };
-
 
   kettu.TorrentHelpers = {
     buildRequest: function(method, arguments) {
@@ -60,7 +59,7 @@
     },
 
     renderTorrent: function(torrent) {
-      var template = (kettu.app.view_mode == 'compact') ? 'show_compact' : 'show';
+      var template = (kettu.app.viewMode == 'compact') ? 'show_compact' : 'show';
       this.render('templates/torrents/' + template + '.mustache', kettu.TorrentsView(torrent, this), function(rendered_view) {
         $(kettu.app.element_selector).find('#' + torrent.id).replaceWith(rendered_view);
         kettu.app.trigger('refreshed-torrent', torrent);
@@ -78,8 +77,8 @@
 
       _.each([{key: 'view', def: 'normal'}, {key: 'filter', def: 'all'}, {key: 'sort', def: 'name'}], function(item) {
         var key = item.key, def = item.def;
-        kettu.app[key + '_mode'] = params[key] || context.store.get(key + '_mode') || def;
-        context.store.set(key + '_mode', kettu.app[key + '_mode']);
+        kettu.app[key + 'Mode'] = params[key] || context.store.get(key + 'Mode') || def;
+        context.store.set(key + 'Mode', kettu.app[key + 'Mode']);
       });
 
       updateSortDropdown();
@@ -115,7 +114,7 @@
     globalUpAndDownload: function(torrents) {
       var uploadRate = 0.0, downloadRate = 0.0;
 
-      _.each(torrents, function(torrent) {
+      torrents.each(function(torrent) {
         uploadRate += torrent.get('rateUpload');
         downloadRate += torrent.get('rateDownload');
       });
@@ -124,7 +123,7 @@
     },
 
     makeNewTorrent: function(torrent, view) {
-      var template = (kettu.app.view_mode == 'compact') ? 'show_compact' : 'show';
+      var template = (kettu.app.viewMode == 'compact') ? 'show_compact' : 'show';
       var rendered_view = this.mustache(this.cache(template), kettu.TorrentsView(torrent, this));
       $('#torrents').append(rendered_view);
       this.updateInfo(torrent);
@@ -158,8 +157,8 @@
 
     addOrUpdateTorrents: function(torrents) {
       var context = this;
-      _.each(torrents, function(torrent) {
-        if(! $('#' + torrent.id.toString()).get(0)) {
+      torrents.each(function(torrent) {
+        if(!$('#' + torrent.id.toString()).get(0)) {
           context.makeNewTorrent(torrent);
         } else {
           context.updateTorrent(torrent);

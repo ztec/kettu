@@ -58,7 +58,7 @@ kettu.LinkHelpers = {
   activateCompactViewLink: function() {
     var context = this, redirect_path = '';
 
-    if(this.store.get('view_mode') == 'compact') {
+    if(this.store.get('viewMode') == 'compact') {
       $('#compact_view').addClass('active');
       $('#compact_view').text('Disable Compact View');      
     }
