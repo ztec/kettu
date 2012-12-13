@@ -17,11 +17,19 @@
   Backbone.sync = function(method, model, options) {
     options = options || {};
 
-    var params = {
+    var data, params;
+
+    if(method === "read") {
+      data = JSON.stringify(model.fetchParams);
+    } else {
+      data = JSON.stringify(model.createParams());
+    }
+    
+    params = {
       type: 'POST',
       url: rpc.url,
       dataType: 'json',
-      data: JSON.stringify(model.fetchParams),
+      data: data,
       processData: false,
       beforeSend: function(xhr) {
         xhr.setRequestHeader('X-Transmission-Session-Id', rpc.session_id);

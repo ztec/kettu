@@ -7,7 +7,7 @@ kettu.SettingsController = function(transmission) {
     var allSettings = context.extendWithLocalSettings(kettu.app.originalSettings),
         hoursPartial = 'templates/settings/hours.mustache',
         minutesPartial = 'templates/settings/minutes.mustache';
-    
+
     context.render('templates/settings/index.mustache', allSettings, function(rendered_view) {
       context.openInfo(rendered_view, 'settings');
       context.updateSettingsCheckboxes(kettu.app.originalSettings);
@@ -34,10 +34,12 @@ kettu.SettingsController = function(transmission) {
   });
   
   transmission.bind('get-settings', function() {
-    var request = { method: 'session-get', arguments: {} };
-    this.remoteQuery(request, function(new_settings) {
-      kettu.app.settings = new_settings;
-      kettu.app.trigger('refreshed-settings');
+    var settings = new kettu.Settings();
+    settings.fetch({
+      success: _.bind(function() {
+        kettu.app.settings = settings;
+        this.trigger('refreshed-settings');
+      }, this)
     });
   });
   

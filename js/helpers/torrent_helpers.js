@@ -23,21 +23,22 @@
       var context = this;
 
       if(torrent_added) {
-        var request = context.buildRequest('torrent-get', {fields: kettu.Torrent.fields});
-        context.remoteQuery(request, function(response) {
-          context.closeInfo();
-          var newest = context.getNewestTorrents(context, response);
-          if(newest.length > 1) {
-            context.render('templates/torrents/new_multiple.mustache', {torrents: newest}, function(rendered_view) {
-              $.facebox(rendered_view);
-            });
-          } else {
-            context.getTorrent(newest[0].id, function(torrent) {
-              context.render('templates/torrents/new_with_data.mustache', kettu.TorrentView(torrent, context, context.params['sort_peers']), function(rendered_view) {
+        kettu.torrents.fetch({
+          success: function() {
+            context.closeInfo();
+            var newest = context.getNewestTorrents(context, kettu.torrents);
+            if(newest.length > 1) {
+              context.render('templates/torrents/new_multiple.mustache', {torrents: newest}, function(rendered_view) {
                 $.facebox(rendered_view);
-                context.initLocations(torrent);
-              });          
-            });
+              });
+            } else {
+              context.getTorrent(newest[0].id, function(torrent) {
+                context.render('templates/torrents/new_with_data.mustache', kettu.TorrentView(torrent, context, context.params['sort_peers']), function(rendered_view) {
+                  $.facebox(rendered_view);
+                  context.initLocations(torrent);
+                });          
+              });
+            }            
           }
         });
         context.redirect('#/torrents');
@@ -100,13 +101,9 @@
   	});  
     },
 
-    getNewestTorrents: function(context, response) {
-      var torrents = _.map(response['torrents'], function(row) {
-            return new kettu.Torrent(row);
-          }),
-          now = parseInt(new Date().getTime().toString().substr(0, 10), 10);
-
-      return _.select(torrents, function(torrent) {
+    getNewestTorrents: function(context, torrents) {
+      var now = parseInt(new Date().getTime().toString().substr(0, 10), 10);      
+      return torrents.select(function(torrent) {
         return parseInt(torrent.get('addedDate'), 10) - now > -2;
       });
     },
@@ -168,7 +165,7 @@
 
     removeOldTorrents: function(torrents) {
       var old_ids = $.map($('.torrent'), function(torrent) { return $(torrent).attr('id'); }),
-          new_ids = $.map(torrents, function(torrent) { return torrent.id; });
+          new_ids = torrents.map(function(torrent) { return torrent.id; });
 
       _.each(old_ids, function(id) {
         if(new_ids.indexOf(parseInt(id, 10)) < 0) {

@@ -205,23 +205,23 @@
   };
 
   var loadLocations = function(view) {
-      view.showLocations = false;
+    view.showLocations = false;
 
-      if (_.isArray(kettu.config.locations) && kettu.config.locations.length > 0) {
-        if(kettu.app.settings) {
-          view.locations = [{name:"Default", path: kettu.app.settings['download-dir']}];          
-        } else {
-          view.locations = [];
+    if(_.isArray(kettu.config.locations) && kettu.config.locations.length > 0) {
+      if(kettu.app.settings) {
+        view.locations = [{name: "Default", path: kettu.app.settings['download-dir']}];          
+      } else {
+        view.locations = [{}];
+      }
+
+      _.each(kettu.config.locations, function(location) {
+        if(location.path != view.locations[0].path) {
+          view.locations.push(location);
         }
+      });
 
-        _.each(kettu.config.locations, function(location) {
-          if (location.path != view.locations[0].path) {
-            view.locations.push(location);
-          }
-        });
-
-        view.showLocations = true;
-      }      
+      view.showLocations = true;
+    }      
   };
 
   kettu.TorrentView = function(torrent, context, sort_peers) {
@@ -229,7 +229,7 @@
     view.sort_peers = sort_peers || 'client';
 
     addFormattedTimes(view, context);
-    addFormattedSizes(view);
+    addFormattedSizes(view);    
     sortPeers(view);
     addPriorityStringToFiles(view, torrent);
     sanitizeNumbers(view, context);

@@ -24,9 +24,11 @@ kettu.TorrentsController = function(transmission) {
   });
   
   transmission.get('#/torrents/add', function(context) {
-    var request = context.buildRequest('torrent-add', { filename: this.params['url'], paused: false });
-    context.remoteQuery(request, function(response) {
-      context.renderConfigForNewTorrents(response['torrent-added']);
+    var torrent = new kettu.Torrent();
+    torrent.save({filename: context.params.url, paused: false}, {
+      success: function() {
+        context.renderConfigForNewTorrents(torrent);
+      }
     });
   });
   
@@ -43,16 +45,18 @@ kettu.TorrentsController = function(transmission) {
   });
   
   transmission.post('#/torrents', function(context) {
-    if(this.params['url'].length > 0) {
-      var request = context.buildRequest('torrent-add', { filename: this.params['url'], paused: !kettu.app.mobile });
-      context.remoteQuery(request, function(response) {
-        if(kettu.app.mobile) {
-          kettu.app.trigger('flash', 'Torrent added successfully.');
-          context.closeInfo();
-        } else {
-          context.renderConfigForNewTorrents(response['torrent-added']);
+    if(context.params.url.length > 0) {
+      var torrent = new kettu.Torrent();
+      torrent.save({filename: context.params.url, paused: !kettu.app.mobile}, {
+        success: function() {
+          if(kettu.app.mobile) {
+            kettu.app.trigger('flash', 'Torrent added successfully.');
+            context.closeInfo();
+          } else {
+            context.renderConfigForNewTorrents(torrent);
+          }
         }
-      });      
+      });
     } else {
       context.submitAddTorrentForm(context, true);
     }    
@@ -97,11 +101,11 @@ kettu.TorrentsController = function(transmission) {
   });
   
   transmission.bind('get-torrents', function(e, params) {
-    var torrents = new kettu.Torrents();
-    torrents.fetch({
+    kettu.torrents = new kettu.Torrents();
+    kettu.torrents.fetch({
       success: _.bind(function() {
         this.trigger('refreshed-torrents', {
-          torrents: torrents,
+          torrents: kettu.torrents,
           rerender: params && params.rerender
         });
       }, this)

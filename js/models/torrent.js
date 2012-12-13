@@ -39,6 +39,16 @@
       }
     },
     
+    createParams: function() {
+      return {
+        method: 'torrent-add',
+        arguments: {
+          filename: this.get('filename'),
+          paused: this.get('paused')
+        }
+      };
+    },
+    
     toJSON: function() {
       var copiedAttributes = _.clone(this.attributes),
           keepInJSON = _.union(kettu.Torrent.byteFields, ['have', 'status']);

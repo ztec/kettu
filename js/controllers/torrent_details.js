@@ -21,7 +21,7 @@ kettu.TorrentDetailsController = function(transmission) {
   });
 
   transmission.get('#/torrent_details/:id', function(context) {
-    var id = parseInt(context.params['id'], 10);
+    var id = parseInt(context.params.id, 10);
 
     kettu.app.trigger('get-torrent-details', {
       id: id, callback: 'renderTorrentDetailsInView'
@@ -36,19 +36,14 @@ kettu.TorrentDetailsController = function(transmission) {
   });
   
   transmission.bind('get-torrent-details', function(e, params) {
-    var context = this,
-        fields = _.union(kettu.Torrent.fields, kettu.Torrent.infoFields),
-        request = context.buildRequest('torrent-get', {ids: params.id, fields: fields});
-
-    context.remoteQuery(request, function(response) {
-      var torrent = new kettu.Torrent(response['torrents'][0]);
-      kettu.app.trigger('refresh-torrent-details', {torrent: torrent, callback: params.callback});
-    });    
+    var torrent = kettu.torrents.find(function(torrent) { return torrent.id === params.id });
+    torrent.fetch();
+    kettu.app.trigger('refresh-torrent-details', {torrent: torrent, callback: params.callback});
   });
   
   transmission.bind('refresh-torrent-details', function(e, params) {
     var context = this,
-        view = kettu.TorrentView(params.torrent, context, context.params['sort_peers']),
+        view = kettu.TorrentView(params.torrent, context, context.params.sort_peers),
         template = params.torrent.hasError() ? 'show_with_errors' : 'show',
         file_partial = 'templates/torrent_details/file.mustache';
 
