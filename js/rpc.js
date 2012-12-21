@@ -21,10 +21,12 @@
 
     if(method === "read") {
       data = JSON.stringify(model.fetchParams);
-    } else {
+    } else if(method === "create") {
       data = JSON.stringify(model.createParams());
+    } else {
+      data = JSON.stringify(options.data);
     }
-    
+
     params = {
       type: 'POST',
       url: rpc.url,

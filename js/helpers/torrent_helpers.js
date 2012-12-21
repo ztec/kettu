@@ -25,23 +25,27 @@
       if(torrent_added) {
         kettu.torrents.fetch({
           success: function() {
-            context.closeInfo();
             var newest = context.getNewestTorrents(context, kettu.torrents);
+
             if(newest.length > 1) {
               context.render('templates/torrents/new_multiple.mustache', {torrents: newest}, function(rendered_view) {
                 $.facebox(rendered_view);
               });
-            } else {
-              context.getTorrent(newest[0].id, function(torrent) {
-                context.render('templates/torrents/new_with_data.mustache', kettu.TorrentView(torrent, context, context.params['sort_peers']), function(rendered_view) {
-                  $.facebox(rendered_view);
-                  context.initLocations(torrent);
-                });          
-              });
-            }            
+            } else if(newest.length === 1) {
+              newest[0].fetch({
+                success: function(torrent) {
+                  context.render('templates/torrents/new_with_data.mustache', kettu.TorrentView(torrent, context, context.params['sort_peers']), function(rendered_view) {
+                    $.facebox(rendered_view);
+                    context.initLocations(torrent);
+                  });
+                }
+              })
+            }
+            
+            context.closeInfo();
+            context.redirect('#/torrents');
           }
         });
-        context.redirect('#/torrents');
       } else {
         kettu.app.trigger('flash', 'Torrent could not be added.');
       }
@@ -62,6 +66,7 @@
     renderTorrent: function(torrent) {
       var template = (kettu.app.viewMode == 'compact') ? 'show_compact' : 'show';
       this.render('templates/torrents/' + template + '.mustache', kettu.TorrentsView(torrent, this), function(rendered_view) {
+        console.log(torrent, rendered_view, torrent.isActive())
         $(kettu.app.element_selector).find('#' + torrent.id).replaceWith(rendered_view);
         kettu.app.trigger('refreshed-torrent', torrent);
       });
@@ -102,8 +107,11 @@
     },
 
     getNewestTorrents: function(context, torrents) {
-      var now = parseInt(new Date().getTime().toString().substr(0, 10), 10);      
+      var now = parseInt(new Date().getTime().toString().substr(0, 10), 10);
+      console.log(torrents.models.length, torrents.select)
       return torrents.select(function(torrent) {
+        console.log('111')
+        console.log(now, torrent.get('name'), parseInt(torrent.get('addedDate'), 10), parseInt(torrent.get('addedDate'), 10) - now)
         return parseInt(torrent.get('addedDate'), 10) - now > -2;
       });
     },

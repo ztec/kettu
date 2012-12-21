@@ -63,28 +63,32 @@ kettu.TorrentsController = function(transmission) {
   });
   
   transmission.put('#/torrents/:id', function(context) {
-    var id = parseInt(context.params['id'], 10),
+    console.log('111')
+    var id = parseInt(context.params.id, 10),
+        torrent = kettu.torrents.find(function(torrent) { return torrent.id === id }),
         request = context.parseRequestFromPutParams(context.params, id);
-
-    context.remoteQuery(request, function(response) {
-      if(request['method'].match(/torrent-set/)) {
-        kettu.app.trigger('flash', 'Torrent updated successfully.');
-      } else {
-        setTimeout(function(id, context) {
-          context.getTorrent(id);
-        }, 200, id, context);
+    console.log(request)
+    torrent.saveWithRequest(request, {
+      success: function() {
+        console.log('222')
+        if(request.method.match(/torrent-set/)) {
+          kettu.app.trigger('flash', 'Torrent updated successfully.');
+        } else {
+          context.renderTorrent(torrent);
+        }        
       }
     });
     
     if(context.params['start_download']) {
-      context.remoteQuery({ method: 'torrent-start', arguments: { ids: id } }, function() {});
-      context.getTorrent(id);
+      torrent.start({
+        success: function() {
+          context.renderTorrent(torrent);          
+        }
+      });
     }
-    if(context.params['location']) {
-      context.remoteQuery({
-          method: 'torrent-set-location',
-          arguments: { ids: id, location: context.params['location'], move: true }
-        }, function() {});
+
+    if(context.params.location) {
+      torrent.setLocation(context.params['location']);
     }
   });
   

@@ -59,7 +59,30 @@
 
       return copiedAttributes;
     },
+
+    start: function(options) {
+      var torrent = this;
+      this.sync('start', this, {
+        data: {method: 'torrent-start', arguments: {ids: this.id}}
+        success: function() {
+          torrent.fetch(options);
+        }
+      });
+    },
+
+    setLocation: function(location) {
+      this.save({}, {data: {
+        method: 'torrent-set-location',
+        arguments: {ids: this.id, location: location, move: true}
+      }});      
+    },
     
+    saveWithRequest: function(request, options) {
+      this.save({}, _.extend(options, {
+        data: request
+      }));
+    },
+
     status: function() {
       return parseInt(this.get('status'), 10);
     },
