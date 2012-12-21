@@ -31,12 +31,14 @@
       this.initializeStatusFunctions();
     },
     
-    fetchParams: {
-      method: 'torrent-get',
-      arguments: {
-        fields: allFields,
-        ids: this.id
-      }
+    fetchParams: function() {
+      return {
+        method: 'torrent-get',
+        arguments: {
+          fields: allFields,
+          ids: this.get('id')
+        }        
+      };
     },
     
     createParams: function() {
@@ -63,7 +65,7 @@
     start: function(options) {
       var torrent = this;
       this.sync('start', this, {
-        data: {method: 'torrent-start', arguments: {ids: this.id}}
+        data: {method: 'torrent-start', arguments: {ids: this.id}},
         success: function() {
           torrent.fetch(options);
         }

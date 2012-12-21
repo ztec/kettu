@@ -17,10 +17,14 @@
   Backbone.sync = function(method, model, options) {
     options = options || {};
 
-    var data, params;
+    var data, params, singleItem = false;
 
     if(method === "read") {
-      data = JSON.stringify(model.fetchParams);
+      var fetchParams = model.fetchParams();
+      if(fetchParams.arguments.ids && !_.contains(fetchParams.arguments.ids, ',')) {
+        singleItem = true;
+      }
+      data = JSON.stringify(fetchParams);
     } else if(method === "create") {
       data = JSON.stringify(model.createParams());
     } else {
@@ -40,6 +44,10 @@
         if(!response) {
           Sammy.log('RPC Connection Failure.');
           Sammy.log('You need to run this web client within the Transmission web server.');
+        }
+
+        if(singleItem) {
+          response['arguments']['torrents'] = response['arguments']['torrents'][0];
         }
 
         if(options.success) {

@@ -2,11 +2,13 @@
 
 kettu.Torrents = Backbone.Collection.extend({
   model: kettu.Torrent,
-  fetchParams: {
-    method: 'torrent-get',
-    arguments: {
-      fields: kettu.Torrent.allFields
-    }
+  fetchParams: function() {
+    return {
+      method: 'torrent-get',
+      arguments: {
+        fields: kettu.Torrent.allFields
+      }      
+    };
   },
   filterByMode: function(filterMode) {
     if(filterMode === 'activity') {

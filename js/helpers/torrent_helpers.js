@@ -66,7 +66,6 @@
     renderTorrent: function(torrent) {
       var template = (kettu.app.viewMode == 'compact') ? 'show_compact' : 'show';
       this.render('templates/torrents/' + template + '.mustache', kettu.TorrentsView(torrent, this), function(rendered_view) {
-        console.log(torrent, rendered_view, torrent.isActive())
         $(kettu.app.element_selector).find('#' + torrent.id).replaceWith(rendered_view);
         kettu.app.trigger('refreshed-torrent', torrent);
       });

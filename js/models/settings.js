@@ -1,6 +1,8 @@
 kettu.Settings = Backbone.Model.extend({
-  fetchParams: {
-    method: 'session-get',
-    arguments: {}
+  fetchParams: function() {
+    return {
+      method: 'session-get',
+      arguments: {}      
+    };
   }
 });

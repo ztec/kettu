@@ -63,19 +63,23 @@ kettu.TorrentsController = function(transmission) {
   });
   
   transmission.put('#/torrents/:id', function(context) {
-    console.log('111')
     var id = parseInt(context.params.id, 10),
         torrent = kettu.torrents.find(function(torrent) { return torrent.id === id }),
         request = context.parseRequestFromPutParams(context.params, id);
-    console.log(request)
+
     torrent.saveWithRequest(request, {
       success: function() {
-        console.log('222')
-        if(request.method.match(/torrent-set/)) {
-          kettu.app.trigger('flash', 'Torrent updated successfully.');
-        } else {
-          context.renderTorrent(torrent);
-        }        
+        setTimeout(function() {
+          torrent.fetch({
+            success: function(a, b, c) {
+              if(request.method.match(/torrent-set/)) {
+                kettu.app.trigger('flash', 'Torrent updated successfully.');
+              } else {
+                context.renderTorrent(torrent);
+              }
+            }
+          })          
+        }, 100);
       }
     });
     
