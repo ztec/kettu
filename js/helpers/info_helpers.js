@@ -41,6 +41,10 @@ kettu.InfoHelpers = {
   infoIsOpen: function() {
     return $('.main').hasClass('info');
   },
+
+  infoDisplaysInspector: function() {
+    return $('#info').hasClass('details');
+  },
   
   infoDisplaysSettings: function() {
     return $('#info').hasClass('settings');
