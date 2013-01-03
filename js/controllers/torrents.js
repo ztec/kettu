@@ -33,14 +33,17 @@ kettu.TorrentsController = function(transmission) {
   });
   
   transmission.del('#/torrents', function(context) {
-    var ids = $.map(context.params['ids'].split(','), function(id) {return parseInt(id, 10);});
-    var request = context.buildRequest('torrent-remove', { ids: ids });
+    var ids = _.map(context.params.ids.split(','), function(id) {
+      return parseInt(id, 10);
+    });
     
-    if(this.params['delete_data']) { request['arguments']['delete-local-data'] = true; }
-    
-    context.remoteQuery(request, function(response) {
-      kettu.app.trigger('flash', 'Torrents removed successfully.');
-      _.each(ids, function(id) { $('#' + id).remove(); });
+    kettu.torrents.destroy(kettu.torrents.select(function(torrent) {
+      return _.contains(ids, torrent.get('id'));
+    }), {delete_local_data: !!this.params.delete_data}, {
+      success: function() {
+        kettu.app.trigger('flash', 'Torrents removed successfully.');
+        _.each(ids, function(id) { $('#' + id).remove(); });
+      }
     });
   });
   
@@ -64,21 +67,22 @@ kettu.TorrentsController = function(transmission) {
   
   transmission.put('#/torrents/:id', function(context) {
     var id = parseInt(context.params.id, 10),
-        torrent = kettu.torrents.find(function(torrent) { return torrent.id === id }),
+        torrent = kettu.torrents.find(function(torrent) { return torrent.id === id; }),
         request = context.parseRequestFromPutParams(context.params, id);
 
     torrent.saveWithRequest(request, {
       success: function() {
         setTimeout(function() {
           torrent.fetch({
-            success: function(a, b, c) {
+            success: function() {
+              console.log(torrent.get('status'));
               if(request.method.match(/torrent-set/)) {
                 kettu.app.trigger('flash', 'Torrent updated successfully.');
               } else {
                 context.renderTorrent(torrent);
               }
             }
-          })          
+          });
         }, 100);
       }
     });

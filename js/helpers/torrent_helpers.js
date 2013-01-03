@@ -107,10 +107,8 @@
 
     getNewestTorrents: function(context, torrents) {
       var now = parseInt(new Date().getTime().toString().substr(0, 10), 10);
-      console.log(torrents.models.length, torrents.select)
+
       return torrents.select(function(torrent) {
-        console.log('111')
-        console.log(now, torrent.get('name'), parseInt(torrent.get('addedDate'), 10), parseInt(torrent.get('addedDate'), 10) - now)
         return parseInt(torrent.get('addedDate'), 10) - now > -2;
       });
     },

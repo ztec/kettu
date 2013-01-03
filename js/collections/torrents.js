@@ -10,6 +10,21 @@ kettu.Torrents = Backbone.Collection.extend({
       }      
     };
   },
+  destroy: function(torrents, args, options) {
+    var context = this;
+    this.sync('remove', this, {
+      data: {method: 'torrent-remove', arguments: _.extend({ids: this.getIds()}, args)},
+      success: function() {
+        context.remove(torrents, {silent: true});
+        options.success();
+      }
+    });
+  },
+  getIds: function() {
+    return this.map(function(torrent) {
+      return torrent.get('id');
+    });
+  },
   filterByMode: function(filterMode) {
     if(filterMode === 'activity') {
       this.reset(this.filter(function(torrent) {
